@@ -7,9 +7,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="manifest" href="manifest.json">
-    <title>CloSong Smart Pro</title>
+    <title>CloSong Pro Max</title>
     <style>
-        :root { --bg: #ffffff; --sidebar: #ffffff; --text: #1a1a1a; --accent: #3498db; --border: #edf2f7; --sub: #718096; }
+        :root { --bg: #ffffff; --sidebar: #ffffff; --text: #1a1a1a; --accent: #3498db; --border: #edf2f7; --sub: #718096; --danger: #e74c3c; }
         .dark-mode { --bg: #1a202c; --sidebar: #2d3748; --text: #f7fafc; --accent: #4299e1; --border: #4a5568; --sub: #a0aec0; }
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -25,76 +25,72 @@
         .sidebar.open { left: 0; }
         .drawer-overlay.open { display: block; opacity: 1; }
 
-        /* Main */
+        /* Main UI */
         .main { flex: 1; height: 100vh; display: flex; flex-direction: column; min-width: 0; }
         .nav { height: 65px; padding: 0 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg); }
+        .menu-btn { background: var(--accent); color: white; border: none; width: 45px; height: 45px; border-radius: 12px; font-size: 22px; }
+
+        /* Scroll Area */
+        .editor-wrapper { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; }
+        .editor-container { max-width: 800px; margin: 0 auto; padding-bottom: 100px; }
         
-        .menu-btn { background: var(--accent); color: white; border: none; width: 45px; height: 45px; border-radius: 12px; font-size: 22px; cursor: pointer; }
+        #songTitle { font-size: 28px; font-weight: 800; border: none; background: transparent; color: var(--text); outline: none; width: 100%; }
+        #songArtist { font-size: 15px; border: none; background: transparent; color: var(--accent); outline: none; width: 100%; margin-bottom: 15px; }
 
-        /* Editor Wrapper */
-        .editor-wrapper { flex: 1; overflow-y: auto; padding: 15px; }
-        .editor-container { max-width: 800px; margin: 0 auto; }
-        #songTitle { font-size: 28px; font-weight: 800; border: none; background: transparent; color: var(--text); outline: none; width: 100%; margin-bottom: 5px; }
-        #songArtist { font-size: 15px; border: none; background: transparent; color: var(--accent); outline: none; width: 100%; margin-bottom: 20px; }
-
-        /* Floating Big Transpose & Play Controls */
+        /* Control Panel */
         .control-panel { display: flex; gap: 8px; align-items: center; }
-        .big-btn { padding: 12px 18px; border-radius: 12px; font-size: 18px; font-weight: bold; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
-        .play-btn { background: var(--accent); color: white; border: none; min-width: 90px; }
-        .speed-slider { width: 80px; accent-color: var(--accent); }
+        .big-btn { padding: 12px; border-radius: 12px; font-size: 16px; font-weight: bold; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+        .play-btn { background: var(--accent); color: white; border: none; min-width: 80px; }
+        .speed-slider { width: 70px; accent-color: var(--accent); }
 
-        /* Chord Assistant Palette */
-        .chord-assistant { background: var(--border); padding: 12px; border-radius: 18px; margin-bottom: 20px; }
-        .chord-label { font-size: 11px; font-weight: bold; color: var(--sub); margin-bottom: 8px; text-transform: uppercase; }
+        /* Chord Assistant */
+        .chord-assistant { background: var(--border); padding: 12px; border-radius: 18px; margin-bottom: 15px; }
+        .chord-label { font-size: 10px; font-weight: 900; color: var(--sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
         .chord-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-        .c-btn { padding: 10px 5px; border-radius: 8px; border: none; background: var(--bg); color: var(--text); font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .c-btn:active { transform: scale(0.95); background: var(--accent); color: white; }
+        .c-btn { padding: 12px 5px; border-radius: 10px; border: none; background: var(--bg); color: var(--text); font-weight: bold; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .c-btn:active { background: var(--accent); color: white; }
 
-        #editor { width: 100%; border: none; outline: none; background: transparent; font-size: 19px; line-height: 1.8; font-family: monospace; color: var(--text); resize: none; min-height: 400px; }
+        #editor { width: 100%; border: none; outline: none; background: transparent; font-size: 19px; line-height: 2; font-family: 'Courier New', monospace; color: var(--text); resize: none; min-height: 500px; }
         
-        /* List in Sidebar */
+        /* Sidebar Elements */
         .song-item { padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); background: var(--bg); display: flex; justify-content: space-between; align-items: center; }
-        .song-item.active { border: 2px solid var(--accent); background: #ebf8ff; color: #2b6cb0; }
-        .search-box { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 15px; }
+        .song-item.active { border-color: var(--accent); background: rgba(52, 152, 219, 0.1); }
+        .search-box { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 15px; background: var(--bg); color: var(--text); }
     </style>
 </head>
 <body ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)">
 
-<div id="overlay" class="drawer-overlay" onclick="toggleMenu()"></div>
+<div id="overlay" class="drawer-overlay" onclick="toggleMenu(false)"></div>
 <div id="sidebar" class="sidebar">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <span style="font-weight:900; color:var(--accent)">CLOSONG PRO</span>
-        <button onclick="toggleMenu()" style="border:none; background:none; font-size:20px;">✕</button>
+        <button onclick="toggleMenu(false)" style="border:none; background:none; font-size:24px;">✕</button>
     </div>
-    <input type="text" id="searchInput" class="search-box" placeholder="ค้นหาเพลง/ผู้แต่ง..." oninput="renderList()">
+    <input type="text" id="searchInput" class="search-box" placeholder="ค้นหาเพลง..." oninput="renderList()">
     <div id="songList" style="flex:1; overflow-y:auto;"></div>
-    <div style="font-size:10px; font-weight:bold; color:#888; margin:10px 0;">PLAYLIST</div>
+    <div class="chord-label" style="margin-top:15px;">PLAYLIST</div>
     <div id="setList" style="max-height:150px; overflow-y:auto;"></div>
-    <button class="big-btn play-btn" style="width:100%; margin-top:10px;" onclick="addSong()">+ สร้างเพลงใหม่</button>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:5px;">
-        <button class="big-btn" style="font-size:12px;" onclick="exportSetlist()">แชร์ลิสต์</button>
-        <button class="big-btn" style="font-size:12px;" onclick="importData()">รับรหัส</button>
-    </div>
+    <button class="big-btn play-btn" style="width:100%; margin-top:15px;" onclick="addSong()">+ สร้างเพลงใหม่</button>
 </div>
 
 <div class="main">
     <div class="nav">
-        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+        <button class="menu-btn" onclick="toggleMenu(true)">☰</button>
         <div class="control-panel">
             <input type="range" id="spd" class="speed-slider" min="0" max="10" value="0">
             <button class="big-btn play-btn" id="scBtn" onclick="toggleScroll()">▶ PLAY</button>
         </div>
-        <button class="big-btn" style="padding:10px;" onclick="document.body.classList.toggle('dark-mode')">🌓</button>
+        <button class="big-btn" style="border-radius:50%; width:42px; height:42px; padding:0;" onclick="document.body.classList.toggle('dark-mode')">🌓</button>
     </div>
 
-    <div class="editor-wrapper">
+    <div class="editor-wrapper" id="scrollContainer">
         <div class="editor-container">
             <input type="text" id="songTitle" placeholder="ชื่อเพลง..." oninput="save()">
-            <input type="text" id="songArtist" placeholder="ชื่อผู้แต่ง / ศิลปิน" oninput="save()">
+            <input type="text" id="songArtist" placeholder="ผู้แต่ง / ศิลปิน" oninput="save()">
             
-            <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <div style="display:flex; gap:8px; margin-bottom:15px;">
                 <button class="big-btn" style="flex:1" onclick="transpose(-1)">♭ ลง</button>
-                <select id="songKey" class="big-btn" style="flex:1" onchange="handleKeyChange(this.value)">
+                <select id="songKey" class="big-btn" style="flex:1; text-align:center;" onchange="handleKeyChange(this.value)">
                     <option value="C">Key: C</option><option value="C#">Key: C#</option><option value="D">Key: D</option>
                     <option value="D#">Key: D#</option><option value="E">Key: E</option><option value="F">Key: F</option>
                     <option value="F#">Key: F#</option><option value="G">Key: G</option><option value="G#">Key: G#</option>
@@ -104,58 +100,87 @@
             </div>
 
             <div class="chord-assistant">
-                <div class="chord-label">คอร์ดแนะนำในคีย์นี้ (Chord Scale)</div>
+                <div class="chord-label">คอร์ดพื้นฐานในสเกล</div>
                 <div id="chordPalette" class="chord-grid"></div>
-                <div class="chord-label" style="margin-top:10px;">ส่วนเติมเต็ม</div>
+                <div class="chord-label" style="margin-top:12px;">ปรับแต่งเทนชั่น (Tension)</div>
                 <div class="chord-grid">
                     <button class="c-btn" onclick="modChord('m')">m</button>
                     <button class="c-btn" onclick="modChord('7')">7</button>
                     <button class="c-btn" onclick="modChord('maj7')">maj7</button>
+                    <button class="c-btn" onclick="modChord('9')">9</button>
+                    <button class="c-btn" onclick="modChord('sus4')">sus4</button>
                     <button class="c-btn" onclick="modChord('/')">/</button>
+                    <button class="c-btn" style="grid-column: span 2; color:var(--danger)" onclick="modChord('clear')">ล้าง (CLR)</button>
                 </div>
             </div>
 
-            <textarea id="editor" placeholder="พิมพ์เนื้อเพลง..." oninput="save()"></textarea>
+            <textarea id="editor" placeholder="ใส่เนื้อเพลงที่นี่..." oninput="save()"></textarea>
         </div>
     </div>
 </div>
 
 <script>
-    let songs = JSON.parse(localStorage.getItem('clo_v50')) || [];
-    let setlist = JSON.parse(localStorage.getItem('set_v50')) || [];
+    let songs = JSON.parse(localStorage.getItem('clo_v60')) || [];
+    let setlist = JSON.parse(localStorage.getItem('set_v60')) || [];
     let cur = null, timer = null, lastKey = 'C';
     const keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-    
-    // Scale patterns: I, ii, iii, IV, V, vi, VII (simplified)
     const scalePatterns = [0, 2, 4, 5, 7, 9, 11];
-    const suffixes = ["", "m", "m", "", "7", "m", "dim"];
+    const suffixes = ["", "m", "m", "", "", "m", "dim"];
 
-    // Sidebar Slide Logic
+    // Swipe Gesture
     let startX = 0;
     function handleTouchStart(e) { startX = e.touches[0].clientX; }
     function handleTouchMove(e) {
         let diff = e.touches[0].clientX - startX;
-        if (diff > 100) toggleMenu(true);
-        if (diff < -100) toggleMenu(false);
+        if (diff > 120) toggleMenu(true);
+        if (diff < -120) toggleMenu(false);
     }
 
-    function toggleMenu(force) {
-        const isOpen = (force !== undefined) ? force : !document.getElementById('sidebar').classList.contains('open');
-        document.getElementById('sidebar').classList.toggle('open', isOpen);
-        document.getElementById('overlay').classList.toggle('open', isOpen);
+    function toggleMenu(open) {
+        document.getElementById('sidebar').classList.toggle('open', open);
+        document.getElementById('overlay').classList.toggle('open', open);
     }
 
     function updatePalette(key) {
         const palette = document.getElementById('chordPalette'); palette.innerHTML = '';
         const rootIdx = keys.indexOf(key);
         scalePatterns.forEach((step, i) => {
-            const chordRoot = keys[(rootIdx + step) % 12];
-            const chordName = chordRoot + suffixes[i];
+            const chordName = keys[(rootIdx + step) % 12] + suffixes[i];
             const btn = document.createElement('button');
             btn.className = 'c-btn'; btn.innerText = chordName;
             btn.onclick = () => insertChord(chordName);
             palette.appendChild(btn);
         });
+    }
+
+    function insertChord(c) {
+        const ed = document.getElementById('editor'); const s = ed.selectionStart;
+        ed.value = ed.value.substring(0, s) + `[${c}]` + ed.value.substring(ed.selectionEnd);
+        ed.selectionStart = ed.selectionEnd = s + c.length + 2; ed.focus(); save();
+    }
+
+    function modChord(m) {
+        const ed = document.getElementById('editor'); const pos = ed.selectionStart;
+        const match = ed.value.substring(0, pos).match(/\[([A-G][#b]?)([^\]]*)\](\s*)$/);
+        if (match) {
+            let newT = (m === 'clear') ? '' : match[2] + m;
+            ed.value = ed.value.substring(0, match.index) + `[${match[1]}${newT}]` + match[3] + ed.value.substring(pos);
+            ed.selectionStart = ed.selectionEnd = pos + (newT.length - match[2].length);
+        } ed.focus(); save();
+    }
+
+    function toggleScroll() {
+        const btn = document.getElementById('scBtn');
+        const container = document.getElementById('scrollContainer');
+        if(timer) { clearInterval(timer); timer = null; btn.innerText = "▶ PLAY"; } 
+        else {
+            const speed = document.getElementById('spd').value;
+            if(speed == 0) return;
+            btn.innerText = "⏸ STOP";
+            timer = setInterval(() => {
+                container.scrollTop += 1;
+            }, 101 - (speed * 10)); // Real-time adjustment logic
+        }
     }
 
     function renderList() {
@@ -198,25 +223,17 @@
 
     function save() {
         if (cur === null) return;
-        songs[cur] = {
-            id: songs[cur].id || Date.now().toString(),
-            title: document.getElementById('songTitle').value,
-            artist: document.getElementById('songArtist').value,
-            content: document.getElementById('editor').value,
-            key: document.getElementById('songKey').value
-        };
-        localStorage.setItem('clo_v50', JSON.stringify(songs));
-        localStorage.setItem('set_v50', JSON.stringify(setlist));
-        // Fast sync: Update only the text in sidebar
-        const activeItem = document.querySelector('.song-item.active b');
-        if(activeItem) activeItem.innerText = songs[cur].title || 'ไม่มีชื่อ';
+        songs[cur] = { id: songs[cur].id || Date.now().toString(), title: document.getElementById('songTitle').value, artist: document.getElementById('songArtist').value, content: document.getElementById('editor').value, key: document.getElementById('songKey').value };
+        localStorage.setItem('clo_v60', JSON.stringify(songs));
+        localStorage.setItem('set_v60', JSON.stringify(setlist));
+        // Fast UI Sync
+        const activeB = document.querySelector('.song-item.active b');
+        if(activeB) activeB.innerText = songs[cur].title || 'ไม่มีชื่อ';
     }
 
     function handleKeyChange(newKey) {
-        const oldIdx = keys.indexOf(lastKey);
-        const newIdx = keys.indexOf(newKey);
-        transpose(newIdx - oldIdx);
-        lastKey = newKey; updatePalette(newKey); save();
+        const oldIdx = keys.indexOf(lastKey); const newIdx = keys.indexOf(newKey);
+        transpose(newIdx - oldIdx); lastKey = newKey; updatePalette(newKey); save();
     }
 
     function transpose(n) {
@@ -229,46 +246,11 @@
         save();
     }
 
-    function insertChord(c) {
-        const ed = document.getElementById('editor'); const s = ed.selectionStart;
-        ed.value = ed.value.substring(0, s) + `[${c}]` + ed.value.substring(ed.selectionEnd);
-        ed.selectionStart = ed.selectionEnd = s + c.length + 2; ed.focus(); save();
-    }
-
-    function modChord(m) {
-        const ed = document.getElementById('editor'); const pos = ed.selectionStart;
-        const match = ed.value.substring(0, pos).match(/\[([A-G][#b]?)([^\]]*)\](\s*)$/);
-        if (match) {
-            let newT = (m === 'clear') ? '' : match[2] + m;
-            ed.value = ed.value.substring(0, match.index) + `[${match[1]}${newT}]` + match[3] + ed.value.substring(pos);
-            ed.selectionStart = ed.selectionEnd = pos + (newT.length - match[2].length);
-        } ed.focus(); save();
-    }
-
-    function toggleScroll() {
-        const btn = document.getElementById('scBtn');
-        if(timer){ clearInterval(timer); timer=null; btn.innerText="▶ PLAY"; }
-        else { 
-            const s = document.getElementById('spd').value; if(s==0) return;
-            timer = setInterval(()=> document.querySelector('.editor-wrapper').scrollTop += 1, 100/s);
-            btn.innerText="⏸ STOP";
-        }
-    }
-
     function addSong() { songs.push({id: Date.now().toString(), title:'เพลงใหม่', content:'', key:'C'}); load(songs.length-1); toggleMenu(false); }
     function addToSet(i, e) { e.stopPropagation(); if(!setlist.includes(songs[i].id)) setlist.push(songs[i].id); save(); renderSetlist(); }
     function remSet(i) { setlist.splice(i,1); save(); renderSetlist(); }
-    function del(i, e) { e.stopPropagation(); if(confirm('ลบเพลงนี้?')){ songs.splice(i,1); cur=null; save(); renderList(); } }
+    function del(i, e) { e.stopPropagation(); if(confirm('ลบ?')){ songs.splice(i,1); cur=null; save(); renderList(); } }
     function loadById(id) { const idx = songs.findIndex(s => s.id === id); if(idx !== -1) load(idx); }
-    function exportSetlist() {
-        const out = songs.filter(s => setlist.includes(s.id));
-        navigator.clipboard.writeText(btoa(unescape(encodeURIComponent(JSON.stringify(out)))));
-        alert("คัดลอก Playlist แล้ว!");
-    }
-    function importData() {
-        const c = prompt("วางรหัส:");
-        if(c) { try { songs = [...songs, ...JSON.parse(decodeURIComponent(escape(atob(c))))]; save(); renderList(); } catch(e){alert("ผิดพลาด");} }
-    }
 
     window.onload = () => { renderList(); if(songs.length > 0) load(0); else updatePalette('C'); };
 </script>
