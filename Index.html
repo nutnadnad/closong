@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CloSong">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+
+    <title>CloSong Pro</title>
+    
+    <style>
+        :root {
+            --bg: #ffffff; --sidebar: #f8f9fa; --text: #1a1a1a;
+            --accent: #3498db; --border: #ececec; --hover: #f1f5f9;
+            --danger: #e74c3c;
+        }
+        .dark-mode {
+            --bg: #121212; --sidebar: #1a1a1a; --text: #e0e0e0;
+            --accent: #5dade2; --border: #333333; --hover: #2c2c2c;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: -apple-system, system-ui, sans-serif; 
+            background: var(--bg); color: var(--text); 
+            margin: 0; display: flex; height: 100vh; overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar { width: 300px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; flex-shrink: 0; }
+        .logo-wrap { width: 100%; margin-bottom: 20px; text-align: center; }
+        .logo-img { max-width: 120px; border-radius: 20%; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+
+        /* Mobile View */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: 40vh; border-right: none; border-bottom: 1px solid var(--border); padding: 15px; }
+            .logo-wrap { display: none; }
+            .main { height: 60vh; }
+        }
+
+        /* Components */
+        .search-box { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); margin-bottom: 10px; outline: none; }
+        .song-list { flex-grow: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
+        .song-item { 
+            padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;
+            background: var(--bg); border: 1px solid transparent; color: var(--text);
+        }
+        .active-song { background: var(--accent) !important; color: #ffffff !important; font-weight: bold; }
+
+        /* Buttons */
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .btn { padding: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: bold; text-align: center; }
+        .btn-accent { background: var(--accent); color: white; border: none; }
+        .btn-del { color: var(--danger); border: none; background: transparent; font-weight: bold; padding: 5px; }
+
+        /* Editor */
+        .main { flex-grow: 1; display: flex; flex-direction: column; background: var(--bg); }
+        .nav { padding: 10px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .editor-container { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; width: 100%; max-width: 800px; margin: 0 auto; }
+        #songTitle { font-size: 24px; font-weight: bold; border: none; background: transparent; color: var(--text); outline: none; margin-bottom: 15px; }
+        #editor { flex-grow: 1; border: none; outline: none; background: transparent; font-size: 18px; line-height: 1.7; font-family: monospace; color: var(--text); resize: none; }
+
+        /* Toast Message */
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 20px; font-size: 12px; display: none; z-index: 9999; }
+    </style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div class="sidebar">
+    <div class="logo-wrap">
+        <img src="icon.png" alt="Logo" class="logo-img">
+    </div>
+    
+    <input type="text" id="searchInput" class="search-box" placeholder="ค้นหาเพลง..." oninput="renderList()">
+    
+    <ul id="songList" class="song-list"></ul>
+    
+    <button class="btn btn-accent" style="width:100%; margin-top:10px; padding:12px;" onclick="addSong()">+ เพลงใหม่</button>
+    
+    <div class="btn-group">
+        <button class="btn" onclick="exportData()">📤 แชร์รหัส</button>
+        <button class="btn" onclick="importData()">📥 รับรหัส</button>
+    </div>
+</div>
+
+<div class="main">
+    <div class="nav">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <button class="btn" onclick="toggleScroll()" id="scrollBtn">▶ เล่น</button>
+            <input type="range" id="speed" min="0" max="10" value="0">
+        </div>
+        <button class="btn" onclick="toggleDark()">🌓 โหมด</button>
+    </div>
+
+    <div class="editor-container">
+        <input type="text" id="songTitle" placeholder="ชื่อเพลง..." oninput="save()">
+        <textarea id="editor" placeholder="ใส่เนื้อเพลงและ [C]คอร์ด..." oninput="save()"></textarea>
+    </div>
+</div>
+
+<script>
+    let songs = JSON.parse(localStorage.getItem('clo_v10')) || [];
+    let cur = null;
+    let timer = null;
+
+    function renderList() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const list = document.getElementById('songList');
+        list.innerHTML = '';
+        songs.forEach((s, i) => {
+            if (s.title.toLowerCase().includes(q)) {
+                const li = document.createElement('li');
+                li.className = `song-item ${cur === i ? 'active-song' : ''}`;
+                li.innerHTML = `<span style="flex:1" onclick="load(${i})">${s.title || 'ไม่มีชื่อ'}</span>
+                                <button class="btn-del" onclick="del(${i})">ลบ</button>`;
+                list.appendChild(li);
+            }
+        });
+    }
+
+    function addSong() {
+        songs.push({ title: 'เพลงใหม่', content: '' });
+        load(songs.length - 1);
+    }
+
+    function load(i) {
+        cur = i;
+        document.getElementById('songTitle').value = songs[i].title;
+        document.getElementById('editor').value = songs[i].content;
+        renderList();
+    }
+
+    function save() {
+        if (cur === null) return;
+        songs[cur].title = document.getElementById('songTitle').value;
+        songs[cur].content = document.getElementById('editor').value;
+        localStorage.setItem('clo_v10', JSON.stringify(songs));
+    }
+
+    function del(i) {
+        event.stopPropagation();
+        if(confirm('ลบเพลงนี้?')) {
+            songs.splice(i, 1);
+            cur = null;
+            save();
+            renderList();
+        }
+    }
+
+    function exportData() {
+        if (songs.length === 0) return;
+        const code = btoa(unescape(encodeURIComponent(JSON.stringify(songs))));
+        navigator.clipboard.writeText(code).then(() => showToast("คัดลอกรหัสแล้ว! ส่งให้เพื่อนได้เลย"));
+    }
+
+    function importData() {
+        const code = prompt("วางรหัสเพลงที่นี่:");
+        if (!code) return;
+        try {
+            const data = JSON.parse(decodeURIComponent(escape(atob(code))));
+            songs = [...songs, ...data];
+            save();
+            renderList();
+            showToast("นำเข้าเพลงสำเร็จ!");
+        } catch(e) { alert("รหัสผิดพลาด!"); }
+    }
+
+    function showToast(m) {
+        const t = document.getElementById('toast');
+        t.innerText = m; t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    function toggleDark() { document.body.classList.toggle('dark-mode'); }
+
+    function toggleScroll() {
+        const btn = document.getElementById('scrollBtn');
+        const ed = document.getElementById('editor');
+        if (timer) {
+            clearInterval(timer); timer = null; btn.innerText = "▶ เล่น";
+        } else {
+            const s = document.getElementById('speed').value;
+            if (s == 0) return;
+            timer = setInterval(() => { ed.scrollTop += 1; }, 100 / s);
+            btn.innerText = "⏸ หยุด";
+        }
+    }
+
+    window.onload = () => { renderList(); if(songs.length > 0) load(0); };
+</script>
+</body>
+</html>
