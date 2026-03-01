@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="closonglogo.png">
+    <link rel="apple-touch-icon" href="logo.png">
     <link rel="manifest" href="manifest.json">
-    <title>CloSong Pro Max V8</title>
+    <title>CloSong Ultimate</title>
     <style>
         :root { --bg: #ffffff; --sidebar: #ffffff; --text: #1a1a1a; --accent: #3498db; --border: #edf2f7; --sub: #718096; --danger: #e74c3c; --structure: #9b59b6; }
         .dark-mode { --bg: #1a202c; --sidebar: #2d3748; --text: #f7fafc; --accent: #4299e1; --border: #4a5568; --sub: #a0aec0; --structure: #bb86fc; }
@@ -62,21 +62,40 @@
             color: var(--text); resize: none; padding: 10px; overflow-y: auto;
         }
         
-        .song-item { padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); background: var(--bg); display: flex; justify-content: space-between; align-items: center; }
+        /* Sidebar Elements */
+        .song-item { padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); background: var(--bg); display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         .song-item.active { border-color: var(--accent); background: rgba(52, 152, 219, 0.1); }
+        .section-title { font-size: 11px; font-weight: 900; color: var(--sub); margin: 10px 0 5px; text-transform: uppercase; }
+        
+        /* Toast Notification */
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 25px; font-size: 13px; display: none; z-index: 1000; }
     </style>
 </head>
 <body ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)">
 
+<div id="toast" class="toast"></div>
 <div id="overlay" class="drawer-overlay" onclick="toggleMenu(false)"></div>
+
 <div id="sidebar" class="sidebar">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <img src="logo.png" class="logo-img" alt="CloSong Logo">
-        <button onclick="toggleMenu(false)" style="border:none; background:none; font-size:24px;">✕</button>
+        <button onclick="toggleMenu(false)" style="border:none; background:none; font-size:24px; color:var(--text);">✕</button>
     </div>
-    <input type="text" id="searchInput" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid var(--border);" placeholder="ค้นหาเพลง..." oninput="renderList()">
-    <div id="songList" style="flex:1; overflow-y:auto;"></div>
-    <button class="big-btn play-btn" style="width:100%; margin-top:15px; padding:15px;" onclick="addSong()">+ สร้างเพลงใหม่</button>
+    <input type="text" id="searchInput" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text);" placeholder="ค้นหาเพลง..." oninput="renderList()">
+    
+    <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+        <div class="section-title">คลังเพลง</div>
+        <div id="songList" style="flex:1; overflow-y:auto;"></div>
+        
+        <div class="section-title" style="margin-top:10px;">PLAYLIST</div>
+        <div id="setList" style="height:150px; overflow-y:auto; background:var(--border); border-radius:10px; padding:5px;"></div>
+    </div>
+    
+    <button class="big-btn play-btn" style="width:100%; margin-top:10px; padding:12px;" onclick="addSong()">+ สร้างเพลงใหม่</button>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:5px;">
+        <button class="big-btn" style="font-size:12px; padding:8px;" onclick="exportSetlist()">📤 แชร์ลิสต์</button>
+        <button class="big-btn" style="font-size:12px; padding:8px;" onclick="importData()">📥 รับรหัส</button>
+    </div>
 </div>
 
 <div class="main">
@@ -138,8 +157,9 @@
 </div>
 
 <script>
-    let songs = JSON.parse(localStorage.getItem('clo_v80')) || [];
-    let cur = null, timer = null, lastKey = 'C', scrollSpeed = 0;
+    let songs = JSON.parse(localStorage.getItem('clo_v90')) || [];
+    let setlist = JSON.parse(localStorage.getItem('set_v90')) || [];
+    let cur = null, timer = null, lastKey = 'C';
     const keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
     const scalePatterns = [0, 2, 4, 5, 7, 9, 11];
     const suffixes = ["", "m", "m", "", "", "m", "dim"];
@@ -169,7 +189,7 @@
         const palette = document.getElementById('chordPalette'); palette.innerHTML = '';
         const rootIdx = keys.indexOf(key);
         scalePatterns.forEach((step, i) => {
-            if(i === 6) return;
+            if(i === 6) return; // Hide dim by default
             const chordName = keys[(rootIdx + step) % 12] + suffixes[i];
             const btn = document.createElement('button');
             btn.className = 'c-btn'; btn.innerText = chordName;
@@ -208,7 +228,7 @@
 
     function adjustSpeed() {
         if(timer) {
-            startScroll(); // Refresh interval immediately
+            startScroll(); 
         }
     }
 
@@ -238,11 +258,30 @@
         const q = document.getElementById('searchInput').value.toLowerCase();
         const list = document.getElementById('songList'); list.innerHTML = '';
         songs.forEach((s, i) => {
-            if (s.title.toLowerCase().includes(q)) {
+            if (s.title.toLowerCase().includes(q) || (s.artist && s.artist.toLowerCase().includes(q))) {
                 const div = document.createElement('div');
                 div.className = `song-item ${cur === i ? 'active' : ''}`;
-                div.innerHTML = `<div style="flex:1" onclick="load(${i}); toggleMenu(false);"><b>${s.title || 'ไม่มีชื่อ'}</b></div>
-                                 <button style="border:none; background:none;" onclick="del(${i}, event)">🗑️</button>`;
+                div.innerHTML = `<div style="flex:1" onclick="load(${i}); toggleMenu(false);">
+                                    <b>${s.title || 'ไม่มีชื่อ'}</b>
+                                 </div>
+                                 <button class="big-btn" style="font-size:10px; padding:5px 8px; margin:0 5px; color:var(--accent);" onclick="addToSet(${i}, event)">+SET</button>
+                                 <button style="border:none; background:none; font-size:16px;" onclick="del(${i}, event)">🗑️</button>`;
+                list.appendChild(div);
+            }
+        });
+        renderSetlist();
+    }
+
+    function renderSetlist() {
+        const list = document.getElementById('setList'); list.innerHTML = '';
+        setlist.forEach((id, i) => {
+            const s = songs.find(x => x.id === id);
+            if(s) {
+                const div = document.createElement('div'); 
+                div.className = 'song-item'; 
+                div.style.padding = '8px'; div.style.marginBottom = '5px';
+                div.innerHTML = `<span style="flex:1; cursor:pointer;" onclick="loadById('${s.id}'); toggleMenu(false);">${i+1}. ${s.title}</span>
+                                 <span style="cursor:pointer; font-weight:bold;" onclick="remSet(${i})">✕</span>`;
                 list.appendChild(div);
             }
         });
@@ -257,11 +296,24 @@
         lastKey = s.key || 'C';
         updatePalette(lastKey); renderList();
     }
+    
+    function loadById(id) {
+        const idx = songs.findIndex(s => s.id === id);
+        if(idx !== -1) load(idx);
+    }
 
     function save() {
         if (cur === null) return;
-        songs[cur] = { id: songs[cur].id || Date.now().toString(), title: document.getElementById('songTitle').value, artist: document.getElementById('songArtist').value, content: document.getElementById('editor').value, key: document.getElementById('songKey').value };
-        localStorage.setItem('clo_v80', JSON.stringify(songs));
+        songs[cur] = { 
+            id: songs[cur].id || Date.now().toString(), 
+            title: document.getElementById('songTitle').value, 
+            artist: document.getElementById('songArtist').value, 
+            content: document.getElementById('editor').value, 
+            key: document.getElementById('songKey').value 
+        };
+        localStorage.setItem('clo_v90', JSON.stringify(songs));
+        localStorage.setItem('set_v90', JSON.stringify(setlist));
+        
         const activeB = document.querySelector('.song-item.active b');
         if(activeB) activeB.innerText = songs[cur].title || 'ไม่มีชื่อ';
     }
@@ -282,7 +334,49 @@
     }
 
     function addSong() { songs.push({id: Date.now().toString(), title:'เพลงใหม่', content:'', key:'C'}); load(songs.length-1); toggleMenu(false); }
-    function del(i, e) { e.stopPropagation(); if(confirm('ลบ?')){ songs.splice(i,1); cur=null; save(); renderList(); } }
+    function del(i, e) { e.stopPropagation(); if(confirm('ต้องการลบเพลงนี้ใช่หรือไม่?')){ songs.splice(i,1); cur=null; save(); renderList(); } }
+    
+    // Setlist Functions
+    function addToSet(i, e) { 
+        e.stopPropagation(); 
+        if(!setlist.includes(songs[i].id)) {
+            setlist.push(songs[i].id); 
+            save(); 
+            renderSetlist(); 
+            showToast("เพิ่มลง Playlist แล้ว");
+        }
+    }
+    function remSet(i) { setlist.splice(i,1); save(); renderSetlist(); }
+    
+    // Import/Export Functions
+    function exportSetlist() {
+        const out = songs.filter(s => setlist.includes(s.id));
+        if(!out.length) return alert("กรุณาเพิ่มเพลงลง Playlist ก่อนแชร์");
+        navigator.clipboard.writeText(btoa(unescape(encodeURIComponent(JSON.stringify(out)))));
+        showToast("คัดลอกรหัส Playlist แล้ว! ส่งให้เพื่อนได้เลย");
+    }
+    
+    function importData() {
+        const c = prompt("วางรหัส Playlist ที่นี่:");
+        if(c) { 
+            try { 
+                const imported = JSON.parse(decodeURIComponent(escape(atob(c))));
+                songs = [...songs, ...imported]; 
+                save(); 
+                renderList(); 
+                showToast("นำเข้าเพลงสำเร็จ!");
+            } catch(e) {
+                alert("รหัสไม่ถูกต้อง");
+            } 
+        }
+    }
+    
+    function showToast(m) { 
+        const t = document.getElementById('toast'); 
+        t.innerText = m; 
+        t.style.display = 'block'; 
+        setTimeout(() => t.style.display = 'none', 2500); 
+    }
 
     window.onload = () => { renderList(); if(songs.length > 0) load(0); else updatePalette('C'); };
 </script>
