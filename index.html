@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="apple-touch-icon" href="closonglogo.png">
     <link rel="manifest" href="manifest.json">
-    <title>CloSong Pro Max V7</title>
+    <title>CloSong Pro Max V8</title>
     <style>
         :root { --bg: #ffffff; --sidebar: #ffffff; --text: #1a1a1a; --accent: #3498db; --border: #edf2f7; --sub: #718096; --danger: #e74c3c; --structure: #9b59b6; }
         .dark-mode { --bg: #1a202c; --sidebar: #2d3748; --text: #f7fafc; --accent: #4299e1; --border: #4a5568; --sub: #a0aec0; --structure: #bb86fc; }
@@ -28,38 +28,41 @@
         /* Main UI */
         .main { flex: 1; height: 100vh; display: flex; flex-direction: column; min-width: 0; }
         .nav { height: 65px; padding: 0 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg); flex-shrink: 0; }
-        .menu-btn { background: var(--accent); color: white; border: none; width: 45px; height: 45px; border-radius: 12px; font-size: 22px; }
+        .menu-btn { background: var(--accent); color: white; border: none; width: 45px; height: 45px; border-radius: 12px; font-size: 22px; cursor: pointer; }
+        
+        .logo-img { height: 35px; width: auto; object-fit: contain; }
 
         /* Editor Area */
         .editor-wrapper { flex: 1; overflow: hidden; display: flex; flex-direction: column; padding: 15px; }
         .editor-container { max-width: 800px; margin: 0 auto; width: 100%; height: 100%; display: flex; flex-direction: column; }
         
         #songTitle { font-size: 24px; font-weight: 800; border: none; background: transparent; color: var(--text); outline: none; width: 100%; }
-        #songArtist { font-size: 14px; border: none; background: transparent; color: var(--accent); outline: none; width: 100%; margin-bottom: 10px; }
+        #songArtist { font-size: 14px; border: none; background: transparent; color: var(--accent); outline: none; width: 100%; margin-bottom: 5px; }
 
         /* Control Panel */
         .control-panel { display: flex; gap: 8px; align-items: center; }
         .big-btn { padding: 10px; border-radius: 10px; font-size: 14px; font-weight: bold; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; }
-        .play-btn { background: var(--accent); color: white; border: none; min-width: 80px; }
+        .play-btn { background: var(--accent); color: white; border: none; min-width: 70px; }
         .speed-slider { width: 70px; accent-color: var(--accent); }
 
-        /* Assistant Panels */
-        .assistant-panel { background: var(--border); padding: 10px; border-radius: 15px; margin-bottom: 10px; flex-shrink: 0; }
-        .label-row { font-size: 10px; font-weight: 900; color: var(--sub); margin-bottom: 5px; text-transform: uppercase; display: flex; justify-content: space-between; }
+        /* Assistant Panel with Collapse */
+        .assistant-panel { background: var(--border); padding: 10px; border-radius: 15px; margin-bottom: 10px; flex-shrink: 0; position: relative; transition: 0.3s; }
+        .assistant-panel.collapsed { height: 40px; overflow: hidden; padding-top: 5px; }
+        .label-row { font-size: 10px; font-weight: 900; color: var(--sub); margin-bottom: 5px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
         .grid-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 8px; }
         .c-btn { padding: 10px 2px; border-radius: 8px; border: none; background: var(--bg); color: var(--text); font-weight: bold; font-size: 13px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .c-btn:active { background: var(--accent); color: white; }
         .s-btn { background: var(--structure); color: white; font-size: 11px; }
 
-        /* THE TEXTAREA (Scroll Target) */
+        .toggle-panel-btn { background: none; border: none; font-size: 18px; color: var(--accent); cursor: pointer; padding: 0 5px; }
+
         #editor { 
             flex: 1; width: 100%; border: none; outline: none; background: transparent; 
             font-size: 18px; line-height: 2; font-family: 'Courier New', monospace; 
             color: var(--text); resize: none; padding: 10px; overflow-y: auto;
         }
         
-        /* Sidebar Elements */
-        .song-item { padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); background: var(--bg); display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        .song-item { padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); background: var(--bg); display: flex; justify-content: space-between; align-items: center; }
         .song-item.active { border-color: var(--accent); background: rgba(52, 152, 219, 0.1); }
     </style>
 </head>
@@ -68,10 +71,10 @@
 <div id="overlay" class="drawer-overlay" onclick="toggleMenu(false)"></div>
 <div id="sidebar" class="sidebar">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <span style="font-weight:900; color:var(--accent)">CLOSONG PRO</span>
+        <img src="logo.png" class="logo-img" alt="CloSong Logo">
         <button onclick="toggleMenu(false)" style="border:none; background:none; font-size:24px;">✕</button>
     </div>
-    <input type="text" id="searchInput" class="search-box" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid var(--border);" placeholder="ค้นหาเพลง..." oninput="renderList()">
+    <input type="text" id="searchInput" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid var(--border);" placeholder="ค้นหาเพลง..." oninput="renderList()">
     <div id="songList" style="flex:1; overflow-y:auto;"></div>
     <button class="big-btn play-btn" style="width:100%; margin-top:15px; padding:15px;" onclick="addSong()">+ สร้างเพลงใหม่</button>
 </div>
@@ -79,17 +82,22 @@
 <div class="main">
     <div class="nav">
         <button class="menu-btn" onclick="toggleMenu(true)">☰</button>
+        <img src="logo.png" class="logo-img" alt="CloSong">
         <div class="control-panel">
-            <input type="range" id="spd" class="speed-slider" min="0" max="10" value="0">
+            <input type="range" id="spd" class="speed-slider" min="0" max="10" step="0.5" value="0" oninput="adjustSpeed()">
             <button class="big-btn play-btn" id="scBtn" onclick="toggleScroll()">▶ PLAY</button>
         </div>
-        <button class="big-btn" style="border-radius:50%; width:40px; height:40px; padding:0;" onclick="document.body.classList.toggle('dark-mode')">🌓</button>
     </div>
 
     <div class="editor-wrapper">
         <div class="editor-container">
-            <input type="text" id="songTitle" placeholder="ชื่อเพลง..." oninput="save()">
-            <input type="text" id="songArtist" placeholder="ผู้แต่ง / ศิลปิน" oninput="save()">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div style="flex: 1;">
+                    <input type="text" id="songTitle" placeholder="ชื่อเพลง..." oninput="save()">
+                    <input type="text" id="songArtist" placeholder="ผู้แต่ง / ศิลปิน" oninput="save()">
+                </div>
+                <button class="big-btn" style="border-radius:50%; width:35px; height:35px; padding:0; margin-bottom:10px;" onclick="document.body.classList.toggle('dark-mode')">🌓</button>
+            </div>
             
             <div style="display:flex; gap:5px; margin-bottom:10px;">
                 <button class="big-btn" style="flex:1" onclick="transpose(-1)">♭ ลง</button>
@@ -102,28 +110,25 @@
                 <button class="big-btn" style="flex:1" onclick="transpose(1)">♯ ขึ้น</button>
             </div>
 
-            <div class="assistant-panel">
-                <div class="label-row"><span>โครงสร้างเพลง</span></div>
-                <div class="grid-row">
-                    <button class="c-btn s-btn" onclick="insertAtCursor('\n[Intro]\n')">Intro</button>
-                    <button class="c-btn s-btn" onclick="insertAtCursor('\n[Verse]\n')">Verse</button>
-                    <button class="c-btn s-btn" onclick="insertAtCursor('\n[Pre-Chorus]\n')">Pre</button>
-                    <button class="c-btn s-btn" onclick="insertAtCursor('\n[Chorus]\n')">Chorus</button>
-                    <button class="c-btn s-btn" onclick="insertAtCursor('\n[Bridge]\n')">Bridge</button>
-                    <button class="c-btn s-btn" onclick="insertAtCursor('\n[Outro]\n')">Outro</button>
-                    <button class="c-btn s-btn" onclick="insertAtCursor('(ซ้ำ)')">(ซ้ำ)</button>
-                    <button class="c-btn s-btn" style="background:#666" onclick="insertAtCursor('\n')">↵ Line</button>
+            <div class="assistant-panel" id="asPanel">
+                <div class="label-row">
+                    <span>แผงควบคุมการเขียน</span>
+                    <button class="toggle-panel-btn" id="toggleAsBtn" onclick="toggleAsPanel()">🔽</button>
                 </div>
-                
-                <div class="label-row"><span>คอร์ดพื้นฐาน & เทนชั่น</span></div>
-                <div id="chordPalette" class="grid-row"></div>
-                <div class="grid-row">
-                    <button class="c-btn" onclick="modChord('m')">m</button>
-                    <button class="c-btn" onclick="modChord('7')">7</button>
-                    <button class="c-btn" onclick="modChord('maj7')">maj7</button>
-                    <button class="c-btn" onclick="modChord('sus4')">sus4</button>
-                    <button class="c-btn" style="grid-column: span 2; color:var(--danger); font-size:11px;" onclick="modChord('clear')">ล้างคอร์ด (CLR)</button>
-                    <button class="c-btn" style="grid-column: span 2;" onclick="modChord('/')">/</button>
+                <div id="asContent">
+                    <div class="grid-row">
+                        <button class="c-btn s-btn" onclick="insertAtCursor('\n[Intro]\n')">Intro</button>
+                        <button class="c-btn s-btn" onclick="insertAtCursor('\n[Verse]\n')">Verse</button>
+                        <button class="c-btn s-btn" onclick="insertAtCursor('\n[Chorus]\n')">Chorus</button>
+                        <button class="c-btn s-btn" onclick="insertAtCursor('\n[Bridge]\n')">Bridge</button>
+                    </div>
+                    <div id="chordPalette" class="grid-row"></div>
+                    <div class="grid-row">
+                        <button class="c-btn" onclick="modChord('m')">m</button>
+                        <button class="c-btn" onclick="modChord('7')">7</button>
+                        <button class="c-btn" onclick="modChord('maj7')">maj7</button>
+                        <button class="c-btn" style="color:var(--danger)" onclick="modChord('clear')">ล้าง (CLR)</button>
+                    </div>
                 </div>
             </div>
 
@@ -133,8 +138,8 @@
 </div>
 
 <script>
-    let songs = JSON.parse(localStorage.getItem('clo_v70')) || [];
-    let cur = null, timer = null, lastKey = 'C';
+    let songs = JSON.parse(localStorage.getItem('clo_v80')) || [];
+    let cur = null, timer = null, lastKey = 'C', scrollSpeed = 0;
     const keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
     const scalePatterns = [0, 2, 4, 5, 7, 9, 11];
     const suffixes = ["", "m", "m", "", "", "m", "dim"];
@@ -153,11 +158,18 @@
         document.getElementById('overlay').classList.toggle('open', open);
     }
 
+    function toggleAsPanel() {
+        const panel = document.getElementById('asPanel');
+        const btn = document.getElementById('toggleAsBtn');
+        const isCollapsed = panel.classList.toggle('collapsed');
+        btn.innerText = isCollapsed ? '🔼' : '🔽';
+    }
+
     function updatePalette(key) {
         const palette = document.getElementById('chordPalette'); palette.innerHTML = '';
         const rootIdx = keys.indexOf(key);
         scalePatterns.forEach((step, i) => {
-            if(i === 6) return; // Skip dim to keep it clean
+            if(i === 6) return;
             const chordName = keys[(rootIdx + step) % 12] + suffixes[i];
             const btn = document.createElement('button');
             btn.className = 'c-btn'; btn.innerText = chordName;
@@ -166,18 +178,37 @@
         });
     }
 
-    // AUTO-SCROLL FIX: Targeted at Textarea
+    // REAL-TIME AUTO SCROLL
     function toggleScroll() {
         const btn = document.getElementById('scBtn');
-        const editor = document.getElementById('editor');
-        if(timer) { clearInterval(timer); timer = null; btn.innerText = "▶ PLAY"; } 
-        else {
-            const speed = document.getElementById('spd').value;
-            if(speed == 0) return;
+        if(timer) { 
+            stopScroll(); 
+            btn.innerText = "▶ PLAY";
+        } else {
+            startScroll();
             btn.innerText = "⏸ STOP";
-            timer = setInterval(() => {
-                editor.scrollTop += 1;
-            }, 105 - (speed * 10));
+        }
+    }
+
+    function startScroll() {
+        if(timer) clearInterval(timer);
+        const speedVal = parseFloat(document.getElementById('spd').value);
+        if(speedVal <= 0) return;
+        
+        timer = setInterval(() => {
+            const editor = document.getElementById('editor');
+            editor.scrollTop += 1;
+        }, (11 - speedVal) * 15);
+    }
+
+    function stopScroll() {
+        clearInterval(timer);
+        timer = null;
+    }
+
+    function adjustSpeed() {
+        if(timer) {
+            startScroll(); // Refresh interval immediately
         }
     }
 
@@ -230,7 +261,7 @@
     function save() {
         if (cur === null) return;
         songs[cur] = { id: songs[cur].id || Date.now().toString(), title: document.getElementById('songTitle').value, artist: document.getElementById('songArtist').value, content: document.getElementById('editor').value, key: document.getElementById('songKey').value };
-        localStorage.setItem('clo_v70', JSON.stringify(songs));
+        localStorage.setItem('clo_v80', JSON.stringify(songs));
         const activeB = document.querySelector('.song-item.active b');
         if(activeB) activeB.innerText = songs[cur].title || 'ไม่มีชื่อ';
     }
