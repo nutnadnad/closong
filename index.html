@@ -7,112 +7,135 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="manifest" href="manifest.json">
-    <title>CloSong Pro Max</title>
+    <title>CloSong Ultra Pro</title>
     <style>
-        :root { --bg: #ffffff; --sidebar: #f8f9fa; --text: #1a1a1a; --accent: #3498db; --border: #ececec; --hover: #f1f5f9; }
-        .dark-mode { --bg: #121212; --sidebar: #1a1a1a; --text: #e0e0e0; --accent: #5dade2; --border: #333333; --hover: #2c2c2c; }
+        :root { --bg: #ffffff; --sidebar: #f2f4f7; --text: #1a1a1a; --accent: #3498db; --border: #dee2e6; --danger: #e74c3c; --success: #2ecc71; }
+        .dark-mode { --bg: #121212; --sidebar: #1e1e1e; --text: #e0e0e0; --accent: #5dade2; --border: #333333; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
 
-        /* Sidebar & Lists */
-        .sidebar { width: 300px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 15px; flex-shrink: 0; overflow-y: auto; }
-        .logo-wrap { text-align: center; margin-bottom: 15px; }
-        .logo-img { max-width: 80px; border-radius: 20%; }
+        /* Sidebar */
+        .sidebar { width: 320px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 15px; flex-shrink: 0; }
+        .logo-wrap { text-align: center; margin-bottom: 10px; }
+        .logo-img { max-width: 60px; border-radius: 15px; }
         
         @media (max-width: 768px) { 
             body { flex-direction: column; } 
-            .sidebar { width: 100%; height: 45vh; border-right: none; border-bottom: 1px solid var(--border); } 
-            .main { height: 55vh; }
+            .sidebar { width: 100%; height: 40vh; border-right: none; border-bottom: 1px solid var(--border); } 
+            .main { height: 60vh; }
         }
 
-        .search-box { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); margin-bottom: 10px; outline: none; }
+        .search-box { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); margin-bottom: 10px; outline: none; font-size: 16px; }
         .song-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; }
-        .song-item { padding: 10px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; background: var(--bg); font-size: 14px; border: 1px solid transparent; }
-        .active-song { background: var(--accent) !important; color: #fff !important; border-color: var(--accent); }
-        .section-label { font-size: 10px; font-weight: bold; color: var(--accent); margin: 15px 0 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .song-item { padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; background: var(--bg); border: 1px solid transparent; font-size: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .active-song { border-left: 5px solid var(--accent); background: var(--accent); color: white !important; }
+        .section-title { font-size: 11px; font-weight: bold; color: #888; text-transform: uppercase; margin: 10px 0 5px; }
 
         /* Main Content */
-        .main { flex-grow: 1; display: flex; flex-direction: column; background: var(--bg); }
-        .nav { padding: 8px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .editor-container { flex-grow: 1; padding: 15px; display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; width: 100%; overflow-y: auto; }
-        
-        #songTitle { font-size: 22px; font-weight: bold; border: none; background: transparent; color: var(--text); outline: none; margin-bottom: 10px; }
-        .toolbar { background: var(--sidebar); padding: 10px; border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border); }
-        .btn-wrap { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
-        
-        .btn { padding: 6px 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; }
-        .btn-accent { background: var(--accent); color: white; border: none; }
-        .chord-btn { color: var(--accent); border-color: var(--accent); }
+        .main { flex-grow: 1; display: flex; flex-direction: column; background: var(--bg); position: relative; }
+        .nav { padding: 10px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .editor-scroll { flex-grow: 1; overflow-y: auto; padding-bottom: 100px; }
+        .editor-container { padding: 20px; max-width: 850px; margin: 0 auto; width: 100%; }
 
-        #editor { flex-grow: 1; border: none; outline: none; background: transparent; font-size: 17px; line-height: 1.8; font-family: monospace; color: var(--text); resize: none; min-height: 300px; }
+        /* Song Header Info */
+        .song-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
+        .meta-input { padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--sidebar); color: var(--text); font-size: 12px; outline: none; }
+
+        #songTitle { font-size: 28px; font-weight: bold; border: none; background: transparent; color: var(--text); outline: none; width: 100%; margin-bottom: 5px; }
         
-        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; display: none; z-index: 1000; }
+        /* Toolbars */
+        .toolbar { background: var(--sidebar); padding: 10px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .btn-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+        .btn { padding: 8px 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .btn-accent { background: var(--accent); color: white; border: none; }
+        .btn-transpose { padding: 12px 20px; font-size: 18px; }
+
+        #editor { width: 100%; border: none; outline: none; background: transparent; font-size: 19px; line-height: 1.8; font-family: 'Courier New', Courier, monospace; color: var(--text); resize: none; min-height: 500px; }
+        
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 25px; font-size: 13px; display: none; z-index: 1000; }
     </style>
 </head>
 <body>
 
-<div id="toast"></div>
+<div id="toast" class="toast"></div>
 
 <div class="sidebar">
     <div class="logo-wrap"><img src="icon.png" alt="Logo" class="logo-img"></div>
     <input type="text" id="searchInput" class="search-box" placeholder="ค้นหาเพลง..." oninput="renderList()">
     
-    <div class="section-label">All Songs</div>
+    <div class="section-title">รายการเพลง</div>
     <ul id="songList" class="song-list"></ul>
     
-    <div class="section-label">Setlist Queue</div>
-    <ul id="setList" class="song-list" style="max-height: 150px; margin-bottom: 10px;"></ul>
+    <div class="section-title">คิวการเล่น (Setlist)</div>
+    <ul id="setList" class="song-list" style="max-height: 150px; background: rgba(0,0,0,0.03); border-radius: 8px;"></ul>
 
-    <button class="btn btn-accent" style="width:100%; padding:12px;" onclick="addSong()">+ NEW SONG</button>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:5px;">
-        <button class="btn" onclick="exportData()">📤 EXPORT</button>
-        <button class="btn" onclick="importData()">📥 IMPORT</button>
+    <button class="btn btn-accent" style="width:100%; margin-top:15px; padding:15px;" onclick="addSong()">+ สร้างเพลงใหม่</button>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px;">
+        <button class="btn" onclick="exportData()">📤 แชร์รหัส</button>
+        <button class="btn" onclick="importData()">📥 รับรหัส</button>
     </div>
 </div>
 
 <div class="main">
     <div class="nav">
         <div style="display:flex; gap:8px; align-items:center;">
-            <button class="btn" onclick="toggleScroll()" id="scBtn">▶ PLAY</button>
-            <input type="range" id="spd" min="0" max="10" value="0" style="width:60px;">
+            <button class="btn btn-accent" onclick="toggleScroll()" id="scBtn" style="min-width: 80px;">▶ เล่น</button>
+            <input type="range" id="spd" min="0" max="10" value="0" style="width:70px;">
         </div>
         <div style="display:flex; gap:5px;">
-            <button class="btn" onclick="transpose(-1)">♭</button>
-            <button class="btn" onclick="transpose(1)">♯</button>
+            <button class="btn" onclick="transpose(-1)" class="btn-transpose">♭</button>
+            <button class="btn" onclick="transpose(1)" class="btn-transpose">♯</button>
             <button class="btn" onclick="document.body.classList.toggle('dark-mode')">🌓</button>
         </div>
     </div>
 
-    <div class="editor-container">
-        <input type="text" id="songTitle" placeholder="Song Title" oninput="save()">
-        
-        <div class="toolbar">
-            <div class="btn-wrap">
-                <button class="btn chord-btn" onclick="addChord('C')">C</button>
-                <button class="btn chord-btn" onclick="addChord('D')">D</button>
-                <button class="btn chord-btn" onclick="addChord('E')">E</button>
-                <button class="btn chord-btn" onclick="addChord('F')">F</button>
-                <button class="btn chord-btn" onclick="addChord('G')">G</button>
-                <button class="btn chord-btn" onclick="addChord('A')">A</button>
-                <button class="btn chord-btn" onclick="addChord('B')">B</button>
+    <div class="editor-scroll">
+        <div class="editor-container">
+            <input type="text" id="songTitle" placeholder="ชื่อเพลง..." oninput="save()">
+            
+            <div class="song-meta">
+                <select id="songKey" class="meta-input" onchange="save()">
+                    <option value="C">Key: C</option><option value="C#">Key: C#</option><option value="D">Key: D</option>
+                    <option value="D#">Key: D#</option><option value="E">Key: E</option><option value="F">Key: F</option>
+                    <option value="F#">Key: F#</option><option value="G">Key: G</option><option value="G#">Key: G#</option>
+                    <option value="A">Key: A</option><option value="A#">Key: A#</option><option value="B">Key: B</option>
+                </select>
+                <input type="text" id="songTime" class="meta-input" placeholder="Time: 4/4" style="width:80px;" oninput="save()">
+                <input type="number" id="songTempo" class="meta-input" placeholder="BPM" style="width:70px;" oninput="save()">
             </div>
-            <div class="btn-wrap" style="border-top:1px solid var(--border); padding-top:8px;">
-                <button class="btn" onclick="modChord('m')">m</button>
-                <button class="btn" onclick="modChord('7')">7</button>
-                <button class="btn" onclick="modChord('maj7')">maj7</button>
-                <button class="btn" onclick="modChord('sus4')">sus4</button>
-                <button class="btn" onclick="modChord('add9')">add9</button>
-                <button class="btn" style="color:var(--danger)" onclick="modChord('clear')">CLR</button>
-            </div>
-        </div>
 
-        <textarea id="editor" placeholder="พิมพ์เนื้อเพลงที่นี่... ใส่คอร์ดในวงเล็บ เช่น [C]" oninput="save()"></textarea>
+            <div class="toolbar">
+                <div class="btn-row">
+                    <button class="btn" style="color:var(--accent)" onclick="insertAtCursor('[C]')">C</button>
+                    <button class="btn" style="color:var(--accent)" onclick="insertAtCursor('[D]')">D</button>
+                    <button class="btn" style="color:var(--accent)" onclick="insertAtCursor('[E]')">E</button>
+                    <button class="btn" style="color:var(--accent)" onclick="insertAtCursor('[F]')">F</button>
+                    <button class="btn" style="color:var(--accent)" onclick="insertAtCursor('[G]')">G</button>
+                    <button class="btn" style="color:var(--accent)" onclick="insertAtCursor('[A]')">A</button>
+                    <button class="btn" style="color:var(--accent)" onclick="insertAtCursor('[B]')">B</button>
+                </div>
+                <div class="btn-row" style="border-top: 1px solid var(--border); padding-top:8px;">
+                    <button class="btn" onclick="modChord('m')">m</button>
+                    <button class="btn" onclick="modChord('7')">7</button>
+                    <button class="btn" onclick="modChord('maj7')">maj7</button>
+                    <button class="btn" onclick="modChord('m7')">m7</button>
+                    <button class="btn" onclick="modChord('9')">9</button>
+                    <button class="btn" onclick="modChord('sus4')">sus4</button>
+                    <button class="btn" onclick="modChord('dim')">dim</button>
+                    <button class="btn" onclick="modChord('aug')">aug</button>
+                    <button class="btn" onclick="modChord('/')">/</button>
+                    <button class="btn" style="color:var(--danger)" onclick="modChord('clear')">CLR</button>
+                </div>
+            </div>
+
+            <textarea id="editor" placeholder="พิมพ์เนื้อเพลงที่นี่... ใส่คอร์ดในวงเล็บ เช่น [C]สวัสดีครับ" oninput="save()"></textarea>
+        </div>
     </div>
 </div>
 
 <script>
-    let songs = JSON.parse(localStorage.getItem('clo_v15')) || [];
-    let setlist = JSON.parse(localStorage.getItem('set_v15')) || [];
+    let songs = JSON.parse(localStorage.getItem('clo_v20')) || [];
+    let setlist = JSON.parse(localStorage.getItem('set_v20')) || [];
     let cur = null, timer = null;
 
     function renderList() {
@@ -122,9 +145,9 @@
             if (s.title.toLowerCase().includes(q)) {
                 const li = document.createElement('li');
                 li.className = `song-item ${cur === i ? 'active-song' : ''}`;
-                li.innerHTML = `<span style="flex:1" onclick="load(${i})"><b>${s.title || 'Untitled'}</b></span>
-                                <span onclick="addToSet(${i})" style="margin-right:10px; color:var(--accent)">+SET</span>
-                                <span onclick="del(${i})">🗑️</span>`;
+                li.innerHTML = `<span style="flex:1" onclick="load(${i})"><b>${s.title || 'ไม่มีชื่อ'}</b></span>
+                                <button class="btn" onclick="addToSet(${i}, event)" style="margin-right:5px; color:var(--accent); font-size:10px;">+SET</button>
+                                <span onclick="del(${i}, event)">🗑️</span>`;
                 list.appendChild(li);
             }
         });
@@ -135,68 +158,109 @@
         const list = document.getElementById('setList'); list.innerHTML = '';
         setlist.forEach((s, i) => {
             const li = document.createElement('li'); li.className = 'song-item';
-            li.innerHTML = `<span style="flex:1" onclick="load(${s.id})">${i+1}. ${s.title}</span>
+            li.innerHTML = `<span style="flex:1" onclick="loadById('${s.id}')">${i+1}. ${s.title}</span>
                             <span onclick="remSet(${i})">×</span>`;
             list.appendChild(li);
         });
     }
 
-    function addSong() { songs.push({title:'New Song', content:''}); load(songs.length-1); }
-    function load(i) { cur = i; document.getElementById('songTitle').value = songs[i].title; document.getElementById('editor').value = songs[i].content; renderList(); }
-    function save() { if(cur!==null){ songs[cur].title=document.getElementById('songTitle').value; songs[cur].content=document.getElementById('editor').value; localStorage.setItem('clo_v15', JSON.stringify(songs)); localStorage.setItem('set_v15', JSON.stringify(setlist)); } }
-    function del(i) { if(confirm('Delete this song?')){ songs.splice(i,1); cur=null; save(); renderList(); } }
+    function addSong() { songs.push({title:'เพลงใหม่', content:'', key:'C', time:'4/4', bpm:''}); load(songs.length-1); }
+    
+    function load(i) {
+        cur = i;
+        const s = songs[i];
+        document.getElementById('songTitle').value = s.title;
+        document.getElementById('editor').value = s.content;
+        document.getElementById('songKey').value = s.key || 'C';
+        document.getElementById('songTime').value = s.time || '4/4';
+        document.getElementById('songTempo').value = s.bpm || '';
+        renderList();
+    }
 
-    function addToSet(i) { setlist.push({title: songs[i].title, id: i}); save(); renderSetlist(); }
+    function loadById(id) { const idx = songs.findIndex(s => s.id === id); if(idx !== -1) load(idx); }
+
+    function save() {
+        if (cur === null) return;
+        const id = songs[cur].id || Date.now().toString();
+        songs[cur] = {
+            id: id,
+            title: document.getElementById('songTitle').value,
+            content: document.getElementById('editor').value,
+            key: document.getElementById('songKey').value,
+            time: document.getElementById('songTime').value,
+            bpm: document.getElementById('songTempo').value
+        };
+        localStorage.setItem('clo_v20', JSON.stringify(songs));
+        localStorage.setItem('set_v20', JSON.stringify(setlist));
+        // อัปเดตรายชื่อแบบ Real-time
+        const items = document.querySelectorAll('.song-item.active-song b');
+        if(items[0]) items[0].innerText = songs[cur].title || 'ไม่มีชื่อ';
+    }
+
+    function del(i, e) { e.stopPropagation(); if(confirm('ลบเพลงนี้?')){ songs.splice(i,1); cur=null; save(); renderList(); } }
+    function addToSet(i, e) { e.stopPropagation(); setlist.push({title: songs[i].title, id: songs[i].id}); save(); renderSetlist(); showToast("เพิ่มเข้าคิวแล้ว"); }
     function remSet(i) { setlist.splice(i,1); save(); renderSetlist(); }
 
-    function addChord(c) {
-        const ed = document.getElementById('editor'); const s = ed.selectionStart;
-        ed.value = ed.value.substring(0, s) + `[${c}]` + ed.value.substring(ed.selectionEnd);
-        ed.selectionStart = ed.selectionEnd = s + c.length + 2; ed.focus(); save();
+    function insertAtCursor(val) {
+        const ed = document.getElementById('editor');
+        const start = ed.selectionStart;
+        ed.value = ed.value.substring(0, start) + val + ed.value.substring(ed.selectionEnd);
+        ed.selectionStart = ed.selectionEnd = start + val.length;
+        ed.focus(); save();
     }
 
     function modChord(m) {
-        const ed = document.getElementById('editor'); const s = ed.selectionStart;
-        let pre = ed.value.substring(0, s);
-        const match = pre.match(/\[([A-G][#b]?)([^\]]*)\](\s*)$/);
+        const ed = document.getElementById('editor');
+        const pos = ed.selectionStart;
+        const textBefore = ed.value.substring(0, pos);
+        const match = textBefore.match(/\[([A-G][#b]?)([^\]]*)\](\s*)$/);
         if (match) {
-            let [f, r, t, sp] = match;
-            if (m === 'clear') t = ''; else t = m;
-            ed.value = pre.substring(0, match.index) + `[${r}${t}]` + sp + ed.value.substring(s);
-            ed.selectionStart = ed.selectionEnd = s + (t.length - match[2].length);
+            let [full, root, tension, space] = match;
+            let newTension = (m === 'clear') ? '' : (m === '/') ? tension + '/' : tension + m;
+            ed.value = textBefore.substring(0, match.index) + `[${root}${newTension}]` + space + ed.value.substring(pos);
+            ed.selectionStart = ed.selectionEnd = pos + (newTension.length - tension.length);
         } ed.focus(); save();
     }
 
-    function transpose(semitones) {
-        const map = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    function transpose(n) {
+        const keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
         const ed = document.getElementById('editor');
         ed.value = ed.value.replace(/\[([A-G][#b]?)([^\]]*)\]/g, (m, r, t) => {
-            let i = map.indexOf(r.replace('Db','C#').replace('Eb','D#').replace('Gb','F#').replace('Ab','G#').replace('Bb','A#'));
-            return `[${map[(i + semitones + 12) % 12]}${t}]`;
-        }); save();
+            let r_fixed = r.replace('Db','C#').replace('Eb','D#').replace('Gb','F#').replace('Ab','G#').replace('Bb','A#');
+            let i = keys.indexOf(r_fixed);
+            if (i === -1) return m;
+            return `[${keys[(i + n + 12) % 12]}${t}]`;
+        });
+        save();
     }
 
     function toggleScroll() {
-        const btn = document.getElementById('scBtn'); const ed = document.getElementById('editor');
-        if(timer){ clearInterval(timer); timer=null; btn.innerText="▶ PLAY"; }
+        const btn = document.getElementById('scBtn');
+        const ed = document.getElementById('editor');
+        if(timer){ clearInterval(timer); timer=null; btn.innerText="▶ เล่น"; }
         else { 
             const s = document.getElementById('spd').value; if(s==0) return;
-            timer = setInterval(()=> ed.scrollTop += 1, 100/s); btn.innerText="⏸ STOP";
+            timer = setInterval(()=> { ed.scrollTop += 1; }, 100/s);
+            btn.innerText="⏸ หยุด";
         }
     }
 
     function exportData() {
         const code = btoa(unescape(encodeURIComponent(JSON.stringify(songs))));
-        navigator.clipboard.writeText(code); showToast("Copied to Clipboard!");
+        navigator.clipboard.writeText(code); showToast("คัดลอกรหัสแล้ว!");
     }
+    
     function importData() {
-        const code = prompt("Paste song code:");
-        if(code) { try { songs = [...songs, ...JSON.parse(decodeURIComponent(escape(atob(code))))]; save(); renderList(); } catch(e){alert("Invalid Code");} }
+        const code = prompt("วางรหัสเพลง:");
+        if(code) { try { 
+            const imported = JSON.parse(decodeURIComponent(escape(atob(code))));
+            songs = [...songs, ...imported]; save(); renderList(); 
+        } catch(e){ alert("รหัสไม่ถูกต้อง"); } }
     }
 
-    function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000); }
+    function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2500); }
 
-    window.onload = () => { renderList(); if(songs.length>0) load(0); };
+    window.onload = () => { renderList(); if(songs.length > 0) load(0); };
 </script>
 </body>
 </html>
